@@ -76,9 +76,6 @@ for start_date, end_date in zip(start_dates, end_dates):
 out_rate = -100*np.array(out_rate)
 dividend_rate = -100*np.array(dividend_rate)
 
-print(end_dates)
-
-
 register_matplotlib_converters()
 
 fig, ax = plt.subplots(2, sharex='col')
