@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 
-transactions_file_path = "/media/DATA/MEGA/Documentos/transactions.xlsx"
+transactions_file_path = "/c/DATA/MEGA/Documentos/transactions.xlsx"
 transactions = pd.read_excel(transactions_file_path, index_col=0,
                              dtype={'date': "datetime64[D]", 'company': str, 'shares': float, 'value': float,
                                     'dividend': float})
@@ -57,6 +57,8 @@ for i, (index, transaction) in enumerate(transactions.iterrows()):
     transactions.iat[i, invested_index] = shares['invested'].sum()
 
 print(shares)
+total = shares.loc[:, ['dividends', 'out']].sum()
+print(f"\nTotal dividends: {total['dividends']:.2f}\nTotal out: {total['out']:.2f}\nTOTAL: {sum(total):.2f}")
 
 frequency = 7
 today = datetime.date.today()
