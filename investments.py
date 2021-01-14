@@ -26,17 +26,17 @@ shares = pd.DataFrame(columns=['company', 'shares', 'invested', 'dividends', 'ou
 
 for i, (index, transaction) in enumerate(transactions.iterrows()):
     # buy first shares of a company
-    if transaction.value < 0 and transaction.company not in shares.company.values:
+    if transaction.shares > 0 and transaction.company not in shares.company.values:
         shares = shares.append({'company': transaction.company, 'shares': transaction.shares,
                                 'invested': transaction.value, 'dividends': 0, 'out': 0}, ignore_index=True)
 
     # buy more shares
-    elif transaction.value < 0:
+    elif transaction.shares > 0:
         shares.loc[shares['company'] == transaction.company, 'shares'] += transaction.shares
         shares.loc[shares['company'] == transaction.company, 'invested'] += transaction.value
 
     # sell shares
-    elif transaction.value > 0:
+    elif transaction.shares < 0:
         owned_shares_value = (shares.loc[shares['company'] == transaction.company, 'invested'].values[0]
                               / shares.loc[shares['company'] == transaction.company, 'shares'].values[0])
         out = transaction.value - transaction.shares*owned_shares_value
@@ -80,18 +80,19 @@ dividend_rate = -100*np.array(dividend_rate)
 
 register_matplotlib_converters()
 
-fig, ax = plt.subplots(2, sharex='col')
+fig, ax = plt.subplots(2, sharex='col', figsize=(7, 6))
 
 ax[0].plot(end_dates, -np.array(invested))
 ax[0].fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
 ax[0].set_ylabel('Total invested (EUR)')
 ax[0].set_ylim(bottom=0)
 
-ax[1].fill_between(end_dates, 0, dividend_rate + out_rate, label='Capital gain')
-ax[1].fill_between(end_dates, 0, dividend_rate, label='Dividends')
+ax[1].fill_between(end_dates, 0, out_rate, label='Completed transactions', facecolor='C0', edgecolor='k')
+ax[1].fill_between(end_dates, out_rate, out_rate + dividend_rate, label='Dividends', facecolor='C2', edgecolor='k')
 ax[1].fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
 ax[1].legend(loc='upper left')
 ax[1].set_ylabel('Annual rate (%)')
 
 fig.align_ylabels()
+fig.tight_layout()
 plt.show()
