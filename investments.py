@@ -56,7 +56,7 @@ for i, (index, transaction) in enumerate(transactions.iterrows()):
 
     transactions.iat[i, invested_index] = shares['invested'].sum()
 
-print(shares)
+print(shares.round(2))
 total = shares.loc[:, ['dividends', 'out']].sum()
 print(f"\nTotal dividends: {total['dividends']:.2f}\nTotal out: {total['out']:.2f}\nTOTAL: {sum(total):.2f}")
 
