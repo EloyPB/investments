@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 
+pd.set_option("display.max_rows", None, "display.max_columns", None)
+
 transactions_file_path = "/c/DATA/MEGA/Documentos/transactions.xlsx"
 transactions = pd.read_excel(transactions_file_path, index_col=0,
                              dtype={'date': "datetime64[D]", 'company': str, 'shares': float, 'value': float,
