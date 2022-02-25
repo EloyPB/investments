@@ -7,6 +7,8 @@ from pandas.plotting import register_matplotlib_converters
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import http.client as httplib
+import nasdaqdatalink
 
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
@@ -82,7 +84,7 @@ dividend_rate = -100*np.array(dividend_rate)
 
 register_matplotlib_converters()
 
-fig, ax = plt.subplots(2, sharex='col', figsize=(7, 6))
+fig, ax = plt.subplots(2, sharex='col', figsize=(7, 6), gridspec_kw={'height_ratios': (0.6, 1)})
 
 ax[0].plot(end_dates, -np.array(invested))
 ax[0].fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
@@ -91,10 +93,29 @@ ax[0].set_ylim(bottom=0)
 
 ax[1].fill_between(end_dates, 0, out_rate, label='Completed transactions', facecolor='C0', edgecolor='k')
 ax[1].fill_between(end_dates, out_rate, out_rate + dividend_rate, label='Dividends', facecolor='C2', edgecolor='k')
+mean_return = np.mean(out_rate + dividend_rate)
+ax[1].plot((end_dates[0], end_dates[-1]), [mean_return]*2, linestyle='dashed', color='C7', label="mean annual return")
 ax[1].fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
-ax[1].legend(loc='upper left')
-ax[1].set_ylabel('Annual rate (%)')
+ax[1].set_ylabel('Annual return (%)')
 
+
+# if there is an active internet connection, try to get inflation data using nasdaq data link
+def have_internet():
+    conn = httplib.HTTPSConnection("8.8.8.8", timeout=5)
+    try:
+        conn.request("HEAD", "/")
+        return True
+    except OSError:
+        return False
+    finally:
+        conn.close()
+
+
+if have_internet():
+    inflation = nasdaqdatalink.get("RATEINF/INFLATION_EUR", start_date=end_dates[0].strftime("%Y-%m-%d"))
+    ax[1].plot(inflation, color='k', linestyle='dotted', label="inflation euro area")
+
+ax[1].legend(loc='upper left')
 fig.align_ylabels()
 fig.tight_layout()
 plt.show()
