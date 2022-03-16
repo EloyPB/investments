@@ -99,21 +99,21 @@ ax[1].fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
 ax[1].set_ylabel('Annual return (%)')
 
 
-# if there is an active internet connection, try to get inflation data using nasdaq data link
-def have_internet():
-    conn = httplib.HTTPSConnection("8.8.8.8", timeout=5)
-    try:
-        conn.request("HEAD", "/")
-        return True
-    except OSError:
-        return False
-    finally:
-        conn.close()
-
-
-if have_internet():
-    inflation = nasdaqdatalink.get("RATEINF/INFLATION_EUR", start_date=end_dates[0].strftime("%Y-%m-%d"))
-    ax[1].plot(inflation, color='k', linestyle='dotted', label="inflation euro area")
+# # if there is an active internet connection, try to get inflation data using nasdaq data link
+# def have_internet():
+#     conn = httplib.HTTPSConnection("8.8.8.8", timeout=5)
+#     try:
+#         conn.request("HEAD", "/")
+#         return True
+#     except OSError:
+#         return False
+#     finally:
+#         conn.close()
+#
+#
+# if have_internet():
+#     inflation = nasdaqdatalink.get("RATEINF/INFLATION_EUR", start_date=end_dates[0].strftime("%Y-%m-%d"))
+#     ax[1].plot(inflation, color='k', linestyle='dotted', label="inflation euro area")
 
 ax[1].legend(loc='upper left')
 fig.align_ylabels()
