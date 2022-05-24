@@ -7,8 +7,8 @@ from pandas.plotting import register_matplotlib_converters
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import http.client as httplib
-import nasdaqdatalink
+# import http.client as httplib
+# import nasdaqdatalink
 
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
@@ -31,8 +31,9 @@ shares = pd.DataFrame(columns=['company', 'shares', 'invested', 'dividends', 'ou
 for i, (index, transaction) in enumerate(transactions.iterrows()):
     # buy first shares of a company
     if transaction.shares > 0 and transaction.company not in shares.company.values:
-        shares = shares.append({'company': transaction.company, 'shares': transaction.shares,
-                                'invested': transaction.value, 'dividends': 0, 'out': 0}, ignore_index=True)
+        new_row = pd.DataFrame({'company': [transaction.company], 'shares': [transaction.shares],
+                                'invested': [transaction.value], 'dividends': [0], 'out': [0]})
+        shares = pd.concat((shares, new_row), ignore_index=True)
 
     # buy more shares
     elif transaction.shares > 0:
