@@ -26,44 +26,54 @@ transactions['invested'] = 0.0
 invested_index = transactions.columns.get_loc('invested')
 
 
-shares = pd.DataFrame(columns=['company', 'shares', 'invested', 'dividends', 'out'])
+names = []
+shares = []
 
 for i, (index, transaction) in enumerate(transactions.iterrows()):
+    transactions.iat[i, invested_index] = transactions.iat[max(0, i - 1), invested_index]
+
     # buy first shares of a company
-    if transaction.shares > 0 and transaction.company not in shares.company.values:
-        new_row = pd.DataFrame({'company': [transaction.company], 'shares': [transaction.shares],
-                                'invested': [transaction.value], 'dividends': [0], 'out': [0]})
-        shares = pd.concat((shares, new_row), ignore_index=True)
+    if transaction.shares > 0 and transaction.company not in names:
+        names.append(transaction.company)
+        shares.append({'shares': transaction.shares, 'invested': transaction.value, 'dividends': 0, 'out': 0})
+        transactions.iat[i, invested_index] -= transaction.value
 
     # buy more shares
     elif transaction.shares > 0:
-        shares.loc[shares['company'] == transaction.company, 'shares'] += transaction.shares
-        shares.loc[shares['company'] == transaction.company, 'invested'] += transaction.value
+        j = names.index(transaction.company)
+        shares[j]['shares'] += transaction.shares
+        shares[j]['invested'] += transaction.value
+        transactions.iat[i, invested_index] -= transaction.value
 
     # sell shares
     elif transaction.shares < 0:
-        owned_shares_value = (shares.loc[shares['company'] == transaction.company, 'invested'].values[0]
-                              / shares.loc[shares['company'] == transaction.company, 'shares'].values[0])
+        j = names.index(transaction.company)
+        owned_shares_value = shares[j]['invested'] / shares[j]['shares']
         out = transaction.value - transaction.shares*owned_shares_value
-        shares.loc[shares['company'] == transaction.company, 'out'] += out
+        shares[j]['out'] += out
         transactions.iat[i, out_index] = out
 
-        shares.loc[shares['company'] == transaction.company, 'shares'] += transaction.shares
-        shares.loc[shares['company'] == transaction.company, 'invested'] = \
-            shares.loc[shares['company'] == transaction.company, 'shares']*owned_shares_value
+        change = transaction.shares * owned_shares_value
+        transactions.iat[i, invested_index] -= change
+        shares[j]['invested'] += change
+        shares[j]['shares'] += transaction.shares
 
     # receive dividend
     elif transaction.dividend:
-        shares.loc[shares['company'] == transaction.company, 'dividends'] += transaction.dividend
+        j = names.index(transaction.company)
+        shares[j]['dividends'] += transaction.dividend
 
     else:
         sys.exit(f"Invalid transaction type in row {index}")
 
-    transactions.iat[i, invested_index] = shares['invested'].sum()
+shares = pd.DataFrame.from_records(shares, index=names)
 
 print(shares.round(2))
 total = shares.loc[:, ['dividends', 'out']].sum()
 print(f"\nTotal dividends: {total['dividends']:.2f}\nTotal out: {total['out']:.2f}\nTOTAL: {sum(total):.2f}")
+
+
+# PLOTS
 
 frequency = 7
 today = datetime.date.today()
@@ -80,14 +90,14 @@ for start_date, end_date in zip(start_dates, end_dates):
     out_rate.append(transactions[start_date:end_date]['out'].sum() / invested[-1])
     dividend_rate.append(transactions[start_date:end_date]['dividend'].sum() / invested[-1])
 
-out_rate = -100*np.array(out_rate)
-dividend_rate = -100*np.array(dividend_rate)
+out_rate = 100*np.array(out_rate)
+dividend_rate = 100*np.array(dividend_rate)
 
 register_matplotlib_converters()
 
 fig, ax = plt.subplots(2, sharex='col', figsize=(7, 6), gridspec_kw={'height_ratios': (0.6, 1)})
 
-ax[0].plot(end_dates, -np.array(invested))
+ax[0].plot(end_dates, np.array(invested))
 ax[0].fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
 ax[0].set_ylabel('Total invested (EUR)')
 ax[0].set_ylim(bottom=0)
