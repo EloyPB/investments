@@ -67,6 +67,7 @@ for i, (index, transaction) in enumerate(transactions.iterrows()):
         sys.exit(f"Invalid transaction type in row {index}")
 
 shares = pd.DataFrame.from_records(shares, index=names)
+shares.sort_index(inplace=True)
 
 print(shares.round(2))
 total = shares.loc[:, ['dividends', 'out']].sum()
