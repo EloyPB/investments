@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import numpy as np
 import pandas as pd
@@ -69,9 +70,19 @@ for i, (index, transaction) in enumerate(transactions.iterrows()):
 shares = pd.DataFrame.from_records(shares, index=names)
 shares.sort_index(inplace=True)
 
-print(shares.round(2))
+line_length = 58
+print("\nCOMPLETED")
+print("=" * line_length)
+print(shares[shares.shares <= 0].round(2))
+
+print("\nACTIVE")
+print("=" * line_length)
+print(shares[shares.shares > 0].round(2))
+
+print("\nSUMMARY")
+print("=" * line_length)
 total = shares.loc[:, ['dividends', 'out']].sum()
-print(f"\nTotal dividends: {total['dividends']:.2f}\nTotal out: {total['out']:.2f}\nTOTAL: {sum(total):.2f}")
+print(f"Total dividends: {total['dividends']:.2f}\nTotal out: {total['out']:.2f}\nTOTAL: {sum(total):.2f}\n")
 
 
 # PLOTS
