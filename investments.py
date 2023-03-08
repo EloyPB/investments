@@ -69,15 +69,18 @@ for i, (index, transaction) in enumerate(transactions.iterrows()):
 
 shares = pd.DataFrame.from_records(shares, index=names)
 shares.sort_index(inplace=True)
+shares['price per share'] = -shares['invested'] / shares['shares']
 
 line_length = 58
 print("\nCOMPLETED")
 print("=" * line_length)
-print(shares[shares.shares <= 0].round(2))
+print(shares.loc[shares.shares <= 0, shares.columns[:-1]].round(2))
 
 print("\nACTIVE")
 print("=" * line_length)
-print(shares[shares.shares > 0].round(2))
+cols = shares.columns.tolist()
+new_cols = cols[:2] + [cols[-1]] + cols[2:-1]
+print(shares.loc[shares.shares > 0, new_cols].round(2))
 
 print("\nSUMMARY")
 print("=" * line_length)
