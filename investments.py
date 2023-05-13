@@ -8,13 +8,11 @@ from pandas.plotting import register_matplotlib_converters
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-# import http.client as httplib
-# import nasdaqdatalink
 
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
-transactions_file_path = "/c/DATA/MEGA/Documentos/transactions.xlsx"
+transactions_file_path = "/c/DATA/CLOUD/Documentos/transactions.xlsx"
 transactions = pd.read_excel(transactions_file_path, index_col=0,
                              dtype={'date': "datetime64[D]", 'company': str, 'shares': float, 'value': float,
                                     'dividend': float})
@@ -123,23 +121,6 @@ mean_return = np.mean(out_rate + dividend_rate)
 ax[1].plot((end_dates[0], end_dates[-1]), [mean_return]*2, linestyle='dashed', color='C7', label="mean annual return")
 ax[1].fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
 ax[1].set_ylabel('Annual return (%)')
-
-
-# # if there is an active internet connection, try to get inflation data using nasdaq data link
-# def have_internet():
-#     conn = httplib.HTTPSConnection("8.8.8.8", timeout=5)
-#     try:
-#         conn.request("HEAD", "/")
-#         return True
-#     except OSError:
-#         return False
-#     finally:
-#         conn.close()
-#
-#
-# if have_internet():
-#     inflation = nasdaqdatalink.get("RATEINF/INFLATION_EUR", start_date=end_dates[0].strftime("%Y-%m-%d"))
-#     ax[1].plot(inflation, color='k', linestyle='dotted', label="inflation euro area")
 
 ax[1].legend(loc='upper left')
 fig.align_ylabels()
