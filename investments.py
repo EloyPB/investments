@@ -21,13 +21,9 @@ elif host_name == "INRC-MPRIDA-17":
 else:
     sys.exit("host not recognized")
 
-
-
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
-transactions = pd.read_excel(transactions_file_path, index_col=0,
-                             dtype={'date': "datetime64[D]", 'company': str, 'shares': float, 'value': float,
-                                    'dividend': float})
+transactions = pd.read_excel(transactions_file_path, index_col=0)
 transactions.fillna(0, inplace=True)
 
 transactions['out'] = 0.0
