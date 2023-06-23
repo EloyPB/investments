@@ -2,6 +2,7 @@
 
 import os
 import sys
+from socket import gethostname
 import numpy as np
 import pandas as pd
 from pandas.plotting import register_matplotlib_converters
@@ -11,12 +12,20 @@ import matplotlib.dates as mdates
 from current_prices import get_latest_prices
 
 
+# path to the spreadsheet
+host_name = gethostname()
+
+if host_name == "etp":
+    transactions_file_path = "/c/DATA/CLOUD/Documentos/transactions.xlsx"
+elif host_name == "INRC-MPRIDA-17":
+    transactions_file_path = "/home/eloy/CLOUD/Documentos/transactions.xlsx"
+else:
+    sys.exit("host not recognized")
+
+
 pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.expand_frame_repr', False)
 
-transactions_file_path = "/c/DATA/CLOUD/Documentos/transactions.xlsx"
-transactions = pd.read_excel(transactions_file_path, index_col=0,
-                             dtype={'date': "datetime64[D]", 'company': str, 'shares': float, 'value': float,
-                                    'dividend': float})
+transactions = pd.read_excel(transactions_file_path, index_col=0)
 transactions.fillna(0, inplace=True)
 
 transactions['out'] = 0.0
