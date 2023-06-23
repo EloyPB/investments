@@ -8,9 +8,10 @@ from pandas.plotting import register_matplotlib_converters
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from current_prices import get_latest_prices
 
 
-pd.set_option("display.max_rows", None, "display.max_columns", None)
+pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.expand_frame_repr', False)
 
 transactions_file_path = "/c/DATA/CLOUD/Documentos/transactions.xlsx"
 transactions = pd.read_excel(transactions_file_path, index_col=0,
@@ -76,9 +77,16 @@ print(shares.loc[shares.shares <= 0, shares.columns[:-1]].round(2))
 
 print("\nACTIVE")
 print("=" * line_length)
-cols = shares.columns.tolist()
-new_cols = cols[:2] + [cols[-1]] + cols[2:-1]
-print(shares.loc[shares.shares > 0, new_cols].round(2))
+
+# # get current prices
+active = get_latest_prices(shares.loc[shares.shares > 0])
+active['current value'] = active['shares'] * active['current price']
+active['change (EUR)'] = active['current value'] + active['invested']
+active['change (%)'] = active['change (EUR)'] / active['invested'] * -100
+
+cols = active.columns.tolist()
+new_cols = cols[:2] + cols[4:] + cols[2:4]
+print(active.loc[:, new_cols].round(2))
 
 print("\nSUMMARY")
 print("=" * line_length)
