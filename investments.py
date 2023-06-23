@@ -84,14 +84,15 @@ print("\nCOMPLETED")
 print("=" * line_length)
 print(shares.loc[shares.shares <= 0, shares.columns[:-1]].round(2))
 
-print("\nACTIVE")
-print("=" * line_length)
-
-# # get current prices
+# get current prices
+print("\nDownloading current prices...")
 active = get_latest_prices(shares.loc[shares.shares > 0])
 active['current value'] = active['shares'] * active['current price']
 active['change (EUR)'] = active['current value'] + active['invested']
 active['change (%)'] = active['change (EUR)'] / active['invested'] * -100
+
+print("\nACTIVE")
+print("=" * line_length)
 
 cols = active.columns.tolist()
 new_cols = cols[:2] + cols[4:] + cols[2:4]
@@ -101,6 +102,7 @@ print("\nSUMMARY")
 print("=" * line_length)
 total = shares.loc[:, ['dividends', 'out']].sum()
 print(f"Total dividends: {total['dividends']:.2f}\nTotal out: {total['out']:.2f}\nTOTAL: {sum(total):.2f}\n")
+print(f"Unrealized gains: {active['change (EUR)'].sum():.2f}\n")
 
 
 # PLOTS
