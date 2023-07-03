@@ -3,10 +3,10 @@ import yfinance as yf
 import pandas as pd
 
 
-def get_latest_prices(shares):
+def get_latest_prices(shares, folder_path):
     shares = shares.copy()
 
-    tickers_sheet = pd.read_excel("/c/DATA/CLOUD/Documentos/ticker_symbols.xlsx", header=None, names=["name", "ticker"])
+    tickers_sheet = pd.read_excel(f"{folder_path}/ticker_symbols.xlsx", header=None, names=["name", "ticker"])
     names = tickers_sheet['name'].to_list()
     tickers = tickers_sheet['ticker'].to_list()
     prices = yf.download(tickers, period="1d", group_by="ticker")
