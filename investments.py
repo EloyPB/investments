@@ -16,7 +16,7 @@ from compare_to_index import compare_to_index
 
 pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.expand_frame_repr', False)
 
-transactions = load_transactions()
+transactions, folder_path = load_transactions()
 
 transactions['out'] = 0.0
 out_index = transactions.columns.get_loc('out')
@@ -74,7 +74,7 @@ print(shares.loc[shares.shares <= 0, shares.columns[:-1]].round(2))
 
 # get current prices
 print("\nDownloading current prices...")
-active = get_latest_prices(shares.loc[shares.shares > 0])
+active = get_latest_prices(shares.loc[shares.shares > 0], folder_path)
 active['current value'] = active['shares'] * active['current price']
 active['change (EUR)'] = active['current value'] + active['invested']
 active['change (%)'] = active['change (EUR)'] / active['invested'] * -100

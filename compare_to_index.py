@@ -28,4 +28,5 @@ if __name__ == "__main__":
 
     from load_transactions import load_transactions
 
-    compare_to_index(load_transactions())
+    transactions, _ = load_transactions()
+    compare_to_index(transactions)
