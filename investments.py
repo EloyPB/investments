@@ -9,31 +9,19 @@ from pandas.plotting import register_matplotlib_converters
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from current_prices import get_latest_prices
-
-
-# path to the spreadsheet
-host_name = gethostname()
-
-if host_name == "etp":
-    transactions_file_path = "/c/DATA/CLOUD/Documentos/transactions.xlsx"
-elif host_name == "INRC-MPRIDA-17":
-    transactions_file_path = "/home/eloy/CLOUD/Documentos/transactions.xlsx"
-else:
-    sys.exit("host not recognized")
+from get_latest_prices import get_latest_prices
+from load_transactions import load_transactions
+from compare_to_index import compare_to_index
 
 
 pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.expand_frame_repr', False)
 
-transactions = pd.read_excel(transactions_file_path, index_col=0)
-transactions.fillna(0, inplace=True)
+transactions = load_transactions()
 
 transactions['out'] = 0.0
 out_index = transactions.columns.get_loc('out')
-
 transactions['invested'] = 0.0
 invested_index = transactions.columns.get_loc('invested')
-
 
 names = []
 shares = []
@@ -103,6 +91,8 @@ print("=" * line_length)
 total = shares.loc[:, ['dividends', 'out']].sum()
 print(f"Total dividends: {total['dividends']:.2f}\nTotal out: {total['out']:.2f}\nTOTAL: {sum(total):.2f}\n")
 print(f"Unrealized gains: {active['change (EUR)'].sum():.2f}\n")
+
+compare_to_index(transactions)
 
 
 # PLOTS
