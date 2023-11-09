@@ -88,7 +88,7 @@ print(active.loc[:, new_cols].round(2))
 
 print("\nSUMMARY")
 print("=" * line_length)
-total = shares.loc[:, ['dividends', 'out']].sum()
+total = shares[['dividends', 'out']].sum()
 print(f"Total dividends: {total['dividends']:.2f}\nTotal out: {total['out']:.2f}\nTOTAL: {sum(total):.2f}\n")
 print(f"Unrealized gains: {active['change (EUR)'].sum():.2f}\n")
 
@@ -109,8 +109,9 @@ invested = []
 
 for start_date, end_date in zip(start_dates, end_dates):
     invested.append(transactions[start_date:end_date].tail(1)['invested'].values[0])
-    out_rate.append(transactions[start_date:end_date]['out'].sum() / invested[-1])
-    dividend_rate.append(transactions[start_date:end_date]['dividend'].sum() / invested[-1])
+    mean_invested = transactions[start_date:end_date]['invested'].mean()
+    out_rate.append(transactions[start_date:end_date]['out'].sum() / mean_invested)
+    dividend_rate.append(transactions[start_date:end_date]['dividend'].sum() / mean_invested)
 
 out_rate = 100*np.array(out_rate)
 dividend_rate = 100*np.array(dividend_rate)
