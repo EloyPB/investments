@@ -12,6 +12,7 @@ import matplotlib.dates as mdates
 from get_latest_prices import get_latest_prices
 from load_transactions import load_transactions
 from compare_to_index import compare_to_index
+from gui import DataFrameGUI
 
 
 pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.expand_frame_repr', False)
@@ -94,6 +95,9 @@ print(f"Unrealized gains: {active['change (EUR)'].sum():.2f}\n")
 
 compare_to_index(transactions)
 
+# app = DataFrameGUI(shares)
+# app.mainloop()
+
 
 # PLOTS
 
@@ -135,4 +139,5 @@ ax[1].set_ylabel('Annual return (%)')
 ax[1].legend(loc='upper left')
 fig.align_ylabels()
 fig.tight_layout()
+
 plt.show()
