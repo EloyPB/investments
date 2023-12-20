@@ -7,8 +7,6 @@ def load_transactions():
     host_name = gethostname()
     if host_name == "etp":
         folder_path = "/c/DATA/CLOUD/Documentos"
-    elif host_name == "INRC-MPRIDA-17":
-        folder_path = "/home/eloy/CLOUD/Documentos"
     else:
         sys.exit("host not recognized")
 
