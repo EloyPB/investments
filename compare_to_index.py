@@ -1,12 +1,13 @@
 import yfinance as yf
 
 
-def compare_to_index(transactions, ticker='LYP6.DE'):
+def compare_to_index(transactions, ticker='A500.MI'):
     # get historic price data
     prices = yf.download(ticker, start=transactions.index.min())
 
     shares = 0
     invested = 0
+    all_good = True
 
     flows = transactions['value']
     for row in range(len(flows)):
@@ -15,6 +16,9 @@ def compare_to_index(transactions, ticker='LYP6.DE'):
             date = flows.index[row]
             if date not in prices.index:
                 date = prices.index.to_series().sub(date).abs().idxmin()
+                if all_good and (date - flows.index[row]).days > 14:
+                    all_good = False
+                    print("Warning: Cannot find appropriate dates in the index data")
             price = prices.loc[date, 'Close']
             shares -= flow / price
             invested -= flow
