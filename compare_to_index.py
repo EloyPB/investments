@@ -19,11 +19,11 @@ def compare_to_index(transactions, ticker='A500.MI'):
                 if all_good and (date - flows.index[row]).days > 14:
                     all_good = False
                     print("Warning: Cannot find appropriate dates in the index data")
-            price = prices.loc[date, 'Close']
+            price = prices.loc[date, 'Close'][ticker]
             shares -= flow / price
             invested -= flow
 
-    current_value = shares * prices.iloc[-1]['Close']
+    current_value = shares * prices.iloc[-1]['Close', ticker]
 
     print(f"\nIf all the money had flowed into {ticker}, you'd now have {shares:.2f} shares worth {current_value:.2f}, resulting in a gain of {current_value-invested:.2f}\n")
 

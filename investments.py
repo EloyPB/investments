@@ -13,6 +13,8 @@ from get_latest_prices import get_latest_prices
 from load_transactions import load_transactions
 from compare_to_index import compare_to_index
 from gui import DataFrameGUI
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 # check for internet connection
@@ -38,14 +40,19 @@ shares = []
 for i, (index, transaction) in enumerate(transactions.iterrows()):
     transactions.iat[i, invested_index] = transactions.iat[max(0, i - 1), invested_index]
 
+    # receive dividend
+    if transaction.dividend:
+        j = names.index(transaction.company)
+        shares[j]['dividends'] += transaction.dividend
+
     # buy first shares of a company
-    if transaction.shares > 0 and transaction.company not in names:
+    elif transaction.shares >= 0 and transaction.company not in names:
         names.append(transaction.company)
         shares.append({'shares': transaction.shares, 'invested': transaction.value, 'dividends': 0, 'out': 0})
         transactions.iat[i, invested_index] -= transaction.value
 
     # buy more shares
-    elif transaction.shares > 0:
+    elif transaction.shares >= 0:
         j = names.index(transaction.company)
         shares[j]['shares'] += transaction.shares
         shares[j]['invested'] += transaction.value
@@ -63,11 +70,6 @@ for i, (index, transaction) in enumerate(transactions.iterrows()):
         transactions.iat[i, invested_index] -= change
         shares[j]['invested'] += change
         shares[j]['shares'] += transaction.shares
-
-    # receive dividend
-    elif transaction.dividend:
-        j = names.index(transaction.company)
-        shares[j]['dividends'] += transaction.dividend
 
     else:
         sys.exit(f"Invalid transaction type in row {index}")
