@@ -12,7 +12,7 @@ import matplotlib.dates as mdates
 from get_latest_prices import get_latest_prices
 from load_transactions import load_transactions
 from compare_to_index import compare_to_index
-from gui import DataFrameGUI
+# from gui import DataFrameGUI
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -28,6 +28,9 @@ except OSError:
 pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.expand_frame_repr', False)
 
 transactions, folder_path = load_transactions()
+
+if not transactions.index.is_monotonic_increasing:
+    raise ValueError("Error: Transactions are not sorted.")
 
 transactions['out'] = 0.0
 out_index = transactions.columns.get_loc('out')
