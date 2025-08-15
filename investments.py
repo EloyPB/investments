@@ -15,14 +15,23 @@ from compare_to_index import compare_to_index
 # from gui import DataFrameGUI
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
+import argparse
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--download", action="store_true", help="Download current prices from yfinance")
+args = parser.parse_args()
+
+download = args.download
+
+print(download)
 
 # check for internet connection
-try:
-    socket.create_connection(("www.google.com", 80), timeout=1)
-    internet_available = True
-except OSError:
-    internet_available = False
+if download:
+    try:
+        socket.create_connection(("www.google.com", 80), timeout=1)
+    except OSError:
+        download = False
 
 
 pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.expand_frame_repr', False)
@@ -88,7 +97,7 @@ print(shares.loc[shares.shares <= 0, shares.columns[:-1]].round(2))
 
 # get current prices
 print("\nDownloading current prices...")
-if internet_available:
+if download:
     active = get_latest_prices(shares.loc[shares.shares > 0], folder_path)
     active['current value'] = active['shares'] * active['current price']
     active['change (EUR)'] = active['current value'] + active['invested']
@@ -110,7 +119,7 @@ print(f"Total dividends: {total['dividends']:.2f}\nTotal out: {total['out']:.2f}
 if 'change (EUR)' in active.columns:
     print(f"Unrealized gains: {active['change (EUR)'].sum():.2f}\n")
 
-if internet_available:
+if download:
     compare_to_index(transactions)
 
 # app = DataFrameGUI(shares)
