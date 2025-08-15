@@ -21,10 +21,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--download", action="store_true", help="Download current prices from yfinance")
 args = parser.parse_args()
-
 download = args.download
-
-print(download)
 
 # check for internet connection
 if download:
