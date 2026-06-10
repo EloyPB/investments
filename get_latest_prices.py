@@ -1,27 +1,34 @@
 import numpy as np
-import yfinance as yf
 import pandas as pd
-import socket
-
+import yfinance as yf
 
 
 def get_latest_prices(shares, folder_path):
     shares = shares.copy()
 
-    tickers_sheet = pd.read_excel(f"{folder_path}/ticker_symbols.xlsx", header=None, names=["name", "ticker"])
-    tickers_sheet = tickers_sheet[tickers_sheet['name'].isin(shares.index)]  # keep only active shares
-    names = tickers_sheet['name'].to_list()
-    tickers = tickers_sheet['ticker'].to_list()
-    prices = yf.download(tickers, period="1d", group_by="ticker")
+    tickers_sheet = pd.read_excel(
+        f"{folder_path}/ticker_symbols.xlsx", header=None, names=["name", "ticker"]
+    )
+    name_to_ticker = (
+        tickers_sheet.loc[tickers_sheet["name"].isin(shares.index), ["name", "ticker"]]
+        .set_index("name")["ticker"]
+        .to_dict()
+    )
 
-    shares['current price'] = np.nan
-    current_index = shares.columns.get_loc('current price')
+    prices = yf.download(
+        list(name_to_ticker.values()), period="1d", group_by="ticker", progress=False
+    )
 
-    for row_num, (name, shares_row) in enumerate(shares.iterrows()):
-        if name in names:
-            ticker_num = names.index(name)
-            ticker = tickers[ticker_num]
-            shares.iat[row_num, current_index] = prices[(ticker, 'Close')].tail(1).values[0]
+    shares["current price"] = np.nan
+
+    for name, ticker in name_to_ticker.items():
+        try:
+            close = prices[(ticker, "Close")].dropna()
+            if close.empty:
+                print(f"Warning: no current price for {name} ({ticker})")
+            else:
+                shares.loc[name, "current price"] = close.iloc[-1]
+        except (KeyError, TypeError, IndexError):
+            print(f"Warning: no current price for {name} ({ticker})")
 
     return shares
-

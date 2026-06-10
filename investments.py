@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import sys
 import datetime
 import socket
@@ -12,7 +11,6 @@ import matplotlib.dates as mdates
 from get_latest_prices import get_latest_prices
 from load_transactions import load_transactions
 from compare_to_index import compare_to_index
-# from gui import DataFrameGUI
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import argparse
@@ -45,33 +43,34 @@ invested_index = transactions.columns.get_loc('invested')
 
 names = []
 shares = []
+company_idx = {}
 
 for i, (index, transaction) in enumerate(transactions.iterrows()):
     transactions.iat[i, invested_index] = transactions.iat[max(0, i - 1), invested_index]
 
     # receive dividend
     if transaction.dividend:
-        j = names.index(transaction.company)
-        shares[j]['dividends'] += transaction.dividend
+        shares[company_idx[transaction.company]]['dividends'] += transaction.dividend
 
     # buy first shares of a company
-    elif transaction.shares >= 0 and transaction.company not in names:
+    elif transaction.shares >= 0 and transaction.company not in company_idx:
+        company_idx[transaction.company] = len(names)
         names.append(transaction.company)
         shares.append({'shares': transaction.shares, 'invested': transaction.value, 'dividends': 0, 'out': 0})
         transactions.iat[i, invested_index] -= transaction.value
 
     # buy more shares
     elif transaction.shares >= 0:
-        j = names.index(transaction.company)
+        j = company_idx[transaction.company]
         shares[j]['shares'] += transaction.shares
         shares[j]['invested'] += transaction.value
         transactions.iat[i, invested_index] -= transaction.value
 
     # sell shares
     elif transaction.shares < 0:
-        j = names.index(transaction.company)
+        j = company_idx[transaction.company]
         owned_shares_value = shares[j]['invested'] / shares[j]['shares']
-        out = transaction.value - transaction.shares*owned_shares_value
+        out = transaction.value - transaction.shares * owned_shares_value
         shares[j]['out'] += out
         transactions.iat[i, out_index] = out
 
@@ -119,9 +118,6 @@ if 'change (EUR)' in active.columns:
 if download:
     compare_to_index(transactions)
 
-# app = DataFrameGUI(shares)
-# app.mainloop()
-
 
 # PLOTS
 
@@ -136,10 +132,11 @@ dividend_rate = []
 invested = []
 
 for start_date, end_date in zip(start_dates, end_dates):
-    invested.append(transactions[start_date:end_date].tail(1)['invested'].values[0])
-    mean_invested = transactions[start_date:end_date]['invested'].mean()
-    out_rate.append(transactions[start_date:end_date]['out'].sum() / mean_invested)
-    dividend_rate.append(transactions[start_date:end_date]['dividend'].sum() / mean_invested)
+    window = transactions[start_date:end_date]
+    invested.append(window['invested'].iloc[-1])
+    mean_invested = window['invested'].mean()
+    out_rate.append(window['out'].sum() / mean_invested)
+    dividend_rate.append(window['dividend'].sum() / mean_invested)
 
 out_rate = 100*np.array(out_rate)
 dividend_rate = 100*np.array(dividend_rate)
