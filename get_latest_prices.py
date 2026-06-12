@@ -3,7 +3,7 @@ import pandas as pd
 import yfinance as yf
 
 
-def get_latest_prices(shares, folder_path):
+def get_latest_prices(shares: pd.DataFrame, folder_path: str) -> pd.DataFrame:
     shares = shares.copy()
 
     tickers_sheet = pd.read_excel(
