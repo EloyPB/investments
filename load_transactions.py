@@ -1,5 +1,4 @@
 import os
-import sys
 from pathlib import Path
 
 import pandas as pd
@@ -13,13 +12,16 @@ def load_transactions(data_dir: str | None = None) -> tuple[pd.DataFrame, str]:
         data_dir = os.environ.get(ENV_DATA_DIR)
 
     if not data_dir:
-        sys.exit(
+        raise RuntimeError(
             f"Set {ENV_DATA_DIR} to the folder containing transactions.xlsx "
             f"(e.g. export {ENV_DATA_DIR}=/path/to/Documentos)"
         )
 
     folder_path = Path(data_dir)
     transactions_file_path = folder_path / "transactions.xlsx"
+
+    if not transactions_file_path.is_file():
+        raise FileNotFoundError(f"Transactions file not found: {transactions_file_path}")
 
     transactions = pd.read_excel(transactions_file_path, index_col=0)
     transactions.fillna(0, inplace=True)

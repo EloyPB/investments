@@ -1,20 +1,29 @@
-from typing import Optional
+from typing import NamedTuple, Optional
 
 import pandas as pd
 import yfinance as yf
 
 from irr import irr_with_terminal, transaction_cash_flows
+from formatting import fmt_number, fmt_pct
+
+
+class IndexComparisonResult(NamedTuple):
+    shares: float
+    current_value: float
+    gain: float
+    index_irr: Optional[float]
 
 
 def compare_to_index(
     transactions: pd.DataFrame,
     ticker: str = "A500.MI",
-    portfolio_irr: Optional[float] = None) -> tuple[float, Optional[float]]:
+    portfolio_irr: Optional[float] = None) -> IndexComparisonResult:
     """
     Simulate routing buy/sell cash flows through an index ETF.
 
-    Returns (gain_eur, index_irr). Index IRR uses the same cash flows as lifetime_irr
-    (buys, sells, dividends) with terminal value = simulated index holdings.
+    Returns shares held, terminal value, gain vs net invested, and index IRR.
+    Index IRR uses the same cash flows as lifetime_irr (buys, sells, dividends)
+    with terminal value = simulated index holdings.
     """
     prices = yf.download(ticker, start=transactions.index.min(), progress=False)
 
@@ -46,21 +55,23 @@ def compare_to_index(
     index_irr = irr_with_terminal(transaction_cash_flows(transactions), current_value)
 
     print(f"\nINDEX COMPARISON ({ticker})")
-    print(f"If all buy/sell flows had gone into the index: {shares:.2f} shares "
-          f"worth {current_value:.2f} EUR (gain {gain:.2f} EUR)")
+    print(
+        f"If all buy/sell flows had gone into the index: {fmt_number(shares)} shares "
+        f"worth {fmt_number(current_value)} EUR (gain {fmt_number(gain)} EUR)"
+    )
 
     if index_irr is not None:
-        print(f"Index IRR (same cash flows as portfolio): {index_irr * 100:.2f}%/year")
+        print(f"Index IRR (same cash flows as portfolio): {fmt_pct(index_irr * 100)}/year")
         print("  (buys/sells move the index; dividends count as cash received; "
               "terminal = index value today)")
         if portfolio_irr is not None:
             diff = (portfolio_irr - index_irr) * 100
-            print(f"Portfolio vs index: {diff:+.2f} percentage points/year")
+            print(f"Portfolio vs index: {fmt_pct(diff, signed=True)}/year")
     else:
         print("Index IRR: could not be computed")
 
     print()
-    return gain, index_irr
+    return IndexComparisonResult(shares, current_value, gain, index_irr)
 
 
 if __name__ == "__main__":
